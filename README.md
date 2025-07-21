@@ -1,3 +1,11 @@
+## 🔀 "Claude Copilot" Fork
+
+**This is a minimal fork of the official Claude Code GitHub Action, adapted to work with the [Claude Copilot Webhook](https://github.com/etechlead/claude-copilot-webhook).**
+
+The webhook provides **GitHub Copilot coding agent-style workflow orchestration** that automates issue-to-PR processes with visual feedback, proper isolation, and improved UX. Together, the action and the webhook replicate the workflow that GitHub Copilot coding agent provides, but using Claude Code instead.
+
+---
+
 ![Claude Code Action responding to a comment](https://github.com/user-attachments/assets/1d60c2e9-82ed-4ee5-b749-f9e021c85f4d)
 
 # Claude Code Action
