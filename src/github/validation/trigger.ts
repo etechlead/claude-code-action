@@ -16,6 +16,11 @@ export function checkContainsTrigger(context: ParsedGitHubContext): boolean {
     inputs: { assigneeTrigger, labelTrigger, triggerPhrase, directPrompt },
   } = context;
 
+  if (context.triggeredByWebhook) {
+    console.log("🚀 Detected execution via webhook, triggering action");
+    return true;
+  }
+
   // If direct prompt is provided, always trigger
   if (directPrompt) {
     console.log(`Direct prompt provided, triggering action`);

@@ -26,6 +26,7 @@ export type ParsedGitHubContext = {
     | PullRequestReviewCommentEvent;
   entityNumber: number;
   isPR: boolean;
+  triggeredByWebhook: boolean;
   inputs: {
     triggerPhrase: string;
     assigneeTrigger: string;
@@ -44,6 +45,25 @@ export type ParsedGitHubContext = {
 
 export function parseGitHubContext(): ParsedGitHubContext {
   const context = github.context;
+
+  const triggeredByWebhook = context.eventName === 'repository_dispatch' && context.payload.client_payload;
+  if (triggeredByWebhook) {
+    const clientPayload = context.payload.client_payload;
+      
+    // Replace bot actor with original user
+    context.actor = clientPayload.assignee_user || context.actor;
+    console.log("👤 Actor: ", context.actor);
+
+    if (clientPayload.original_event_name) {
+      console.log("🚀 Detected execution via repository_dispatch. Reconstructing context from client_payload.");
+      
+      context.eventName = clientPayload.original_event_name;
+      context.payload = clientPayload.original_event_payload;
+      context.payload.action = clientPayload.original_event_payload.action;
+      
+      console.log(`📦 Reconstructed eventName: ${context.eventName}, action: ${context.payload.action}`);
+    }
+  }
 
   const commonFields = {
     runId: process.env.GITHUB_RUN_ID!,
@@ -80,6 +100,7 @@ export function parseGitHubContext(): ParsedGitHubContext {
         payload: context.payload as IssuesEvent,
         entityNumber: (context.payload as IssuesEvent).issue.number,
         isPR: false,
+        triggeredByWebhook,
       };
     }
     case "issue_comment": {
@@ -90,6 +111,7 @@ export function parseGitHubContext(): ParsedGitHubContext {
         isPR: Boolean(
           (context.payload as IssueCommentEvent).issue.pull_request,
         ),
+        triggeredByWebhook,
       };
     }
     case "pull_request": {
@@ -98,6 +120,7 @@ export function parseGitHubContext(): ParsedGitHubContext {
         payload: context.payload as PullRequestEvent,
         entityNumber: (context.payload as PullRequestEvent).pull_request.number,
         isPR: true,
+        triggeredByWebhook,
       };
     }
     case "pull_request_review": {
@@ -107,6 +130,7 @@ export function parseGitHubContext(): ParsedGitHubContext {
         entityNumber: (context.payload as PullRequestReviewEvent).pull_request
           .number,
         isPR: true,
+        triggeredByWebhook,
       };
     }
     case "pull_request_review_comment": {
@@ -116,6 +140,7 @@ export function parseGitHubContext(): ParsedGitHubContext {
         entityNumber: (context.payload as PullRequestReviewCommentEvent)
           .pull_request.number,
         isPR: true,
+        triggeredByWebhook,
       };
     }
     default:
